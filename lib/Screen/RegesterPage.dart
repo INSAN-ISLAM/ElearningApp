@@ -1,3 +1,8 @@
+import 'dart:js';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:demo_project/Screen/profile_Page.dart';
+import 'package:demo_project/Screen/updateProfilePage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -11,19 +16,46 @@ import 'LoginPage.dart';
 //import 'bottom_nav_bar.dart';
 
 
+
 class Register_Page extends StatelessWidget {
   Register_Page({Key? key}) : super(key: key);
   final TextEditingController emailETController = TextEditingController();
-  final TextEditingController firstNameETController = TextEditingController();
-  final TextEditingController lastNameETController = TextEditingController();
+  final TextEditingController NameETController = TextEditingController();
+  final TextEditingController bloodNameETController = TextEditingController();
   final TextEditingController mobileETController = TextEditingController();
   final TextEditingController passwordETController = TextEditingController();
-
+  final TextEditingController ClassNameETController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool m=true;
-  // final _auth=FirebaseAuth.instance;
-  // late String email;
-  // late String password;
+
+  Future<void> _signUp() async {
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailETController.text,
+        password: passwordETController.text,
+     ).then((value) async {
+
+        FirebaseFirestore.instance.collection('Check').doc(value.user!.uid).set({
+          'name': NameETController.text,
+          'mobile': mobileETController.text,
+          'email': emailETController.text,
+          'Blood': bloodNameETController.text,
+          'Class Name': ClassNameETController.text,
+          'password': int.tryParse(passwordETController.text) ?? 0,
+        });
+        return value;
+
+     } );
+
+
+      //print('User signed up: ${userCredential.user!.uid}');
+
+    } catch (e) {
+      // Error occurred during signup
+      print('Error signing up: $e');
+     // showSnackBarMessage(context as BuildContext, 'Registration Failed! Try again', true);
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,7 +69,7 @@ class Register_Page extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Get Started With',
+                  'Get Registation ',
                   style: screenTitleTextStyle,
                 ),
                 SizedBox(height: 20),
@@ -58,8 +90,8 @@ class Register_Page extends StatelessWidget {
                 ),
                 SizedBox(height: 20),
                 AppTextFieldWidget(
-                  controller: firstNameETController,
-                  hintText: 'First Name ',
+                  controller: NameETController,
+                  hintText: 'Name',
                   validator: (value) {
                     if (value?.isEmpty ?? true) {
                       return 'Enter your first name';
@@ -69,8 +101,8 @@ class Register_Page extends StatelessWidget {
                 ),
                 SizedBox(height: 20),
                 AppTextFieldWidget(
-                  controller: lastNameETController,
-                  hintText: 'Last Name',
+                  controller: bloodNameETController,
+                  hintText: 'Blood Group',
                   validator: (value) {
                     if (value?.isEmpty ?? true) {
                       return 'Enter your last name';
@@ -83,6 +115,19 @@ class Register_Page extends StatelessWidget {
                 AppTextFieldWidget(
                   controller: mobileETController,
                   hintText: 'Mobile',
+                  validator: (value) {
+                    if (value?.isEmpty ?? true) {
+                      return 'Enter your valid mobile';
+                    }
+                    return null;
+                  },
+
+                ),
+
+                SizedBox(height: 20),
+                AppTextFieldWidget(
+                  controller: ClassNameETController,
+                  hintText: 'Class Name',
                   validator: (value) {
                     if (value?.isEmpty ?? true) {
                       return 'Enter your valid mobile';
@@ -115,16 +160,11 @@ class Register_Page extends StatelessWidget {
                   onTap:  ()  async {
                     if (_formKey.currentState!.validate()) {
                       try {
-                     // final user=   await _auth.createUserWithEmailAndPassword(
-                     //   email: email,
-                     //   password: password,
-                     // );
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const LogInSreen()));
-                        showSnackBarMessage(
-                         context, 'Registration successful!');
+                        _signUp();
+                       // Navigator.push(context, MaterialPageRoute(builder: (context) => const LogInSreen()));
+
                       } catch (e) {
-                        showSnackBarMessage(context,
-                            'Registration Failed! Try again', true);
+
                       }
 
                   //  Navigator.pop(context);

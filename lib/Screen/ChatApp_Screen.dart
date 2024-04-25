@@ -1,192 +1,122 @@
-// // Define Message model
-// class Message {
-//   String senderId;
-//   String receiverId;
-//   String messageContent;
-//   DateTime timestamp;
-//
-//   Message({
-//     required this.senderId,
-//     required this.receiverId,
-//     required this.messageContent,
-//     required this.timestamp,
-//   });
-// }
-//
-// // Firebase Firestore service
-// class FirestoreService {
-//   // Methods to interact with Firestore
-// }
-//
-// // Chat Screen Widget
-// class ChatScreen extends StatefulWidget {
-//   final String userId;
-//
-//   ChatScreen({required this.userId});
-//
-//   @override
-//   _ChatScreenState createState() => _ChatScreenState();
-// }
-//
-// class _ChatScreenState extends State<ChatScreen> {
-//   List<Message> messages = [];
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     // Listen to changes in Firestore messages collection
-//     // Update messages list when new messages are added
-//   }
-//
-//   void sendMessage(String messageContent) {
-//     // Send message to Firestore
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Chat'),
-//       ),
-//       body: Column(
-//         children: [
-//           Expanded(
-//             child: ListView.builder(
-//               itemCount: messages.length,
-//               itemBuilder: (context, index) {
-//                 Message message = messages[index];
-//                 // Return a widget to display the message
-//               },
-//             ),
-//           ),
-//           // Text input and send button
-//         ],
-//       ),
-//     );
-//   }
-// }
-//
-// // Authentication Screen Widget
-// class AuthenticationScreen extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Sign In'),
-//       ),
-//       body: Center(
-//         child: ElevatedButton(
-//           onPressed: () {
-//             // Perform sign in
-//           },
-//           child: Text('Sign In'),
-//         ),
-//       ),
-//     );
-//   }
-// }
-  //-----------------------------------0------------------------
-// import 'package:flutter/material.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
-//
-// class ChatScreen extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Simple Chat'),
-//       ),
-//       body: ChatBody(),
-//     );
-//   }
-// }
-//
-// class ChatBody extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return StreamBuilder(
-//       stream: FirebaseFirestore.instance.collection('messages').snapshots(),
-//       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-//         if (!snapshot.hasData) {
-//           return CircularProgressIndicator();
-//         }
-//         return ListView(
-//           children: snapshot.data!.docs.map((DocumentSnapshot document) {
-//             Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-//             return ListTile(
-//               title: Text(data['content']),
-//               subtitle: Text(data['sender']),
-//             );
-//           }).toList(),
-//         );
-//       },
-//     );
-//   }
-// }
-// //---------------------------------------------0---------------------
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 
-class ChatScreen extends StatefulWidget {
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'LoginPage.dart';
+
+import 'messege.dart';
+
+class chatpage extends StatefulWidget {
+  String email;
+ chatpage({required this.email});
   @override
-  _ChatScreenState createState() => _ChatScreenState();
+  _chatpageState createState() => _chatpageState(email: email);
 }
 
-class _ChatScreenState extends State<ChatScreen> {
-  TextEditingController _controller = TextEditingController();
-  List<String> _messages = [];
+class _chatpageState extends State<chatpage> {
+  String email;
+  _chatpageState({required this.email});
 
-  void _sendMessage() {
-    String message = _controller.text.trim();
-    if (message.isNotEmpty) {
-      setState(() {
-        _messages.add(message);
-      });
-      _controller.clear();
-    }
-  }
+  final fs = FirebaseFirestore.instance;
+  final _auth = FirebaseAuth.instance;
+  final TextEditingController message = new TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Simple Chat'),
-      ),
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            child: ListView.builder(
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(_messages[index]),
-                  subtitle: Text('Sender: Me'),
-                  // You can display sender/receiver dynamically based on your implementation
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: InputDecoration(
-                      hintText: 'Enter your message...',
-                    ),
+        title: Text(
+          'data',
+        ),
+        actions: [
+          MaterialButton(
+            onPressed: () {
+              _auth.signOut().whenComplete(() {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => LogInSreen(),
                   ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.send),
-                  onPressed: _sendMessage,
-                ),
-              ],
+                );
+              });
+            },
+            child: Text(
+              "signOut",
             ),
           ),
         ],
       ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(14.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                height: MediaQuery.of(context).size.height * 0.79,
+                child: messages(
+                  email: email,
+                ),
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: message,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.purple[100],
+                        hintText: 'message',
+                        enabled: true,
+                        contentPadding: const EdgeInsets.only(
+                            left: 14.0, bottom: 8.0, top: 8.0),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: new BorderSide(color: Colors.purple),
+                          borderRadius: new BorderRadius.circular(10),
+                        ),
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: new BorderSide(color: Colors.purple),
+                          borderRadius: new BorderRadius.circular(10),
+                        ),
+                      ),
+                      validator: (value) {},
+                      onSaved: (value) {
+                        message.text = value!;
+                      },
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      if (message.text.isNotEmpty) {
+                     //   User? user = FirebaseAuth.instance.currentUser;
+                        fs.collection('Messages').doc().set({
+                          'message': message.text.trim(),
+                          'time': DateTime.now(),
+                          'email': email,
+                        });
+
+                        message.clear();
+                      }
+                    },
+                    icon: Icon(Icons.send_sharp),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
+
+
+
+
+
+
+
+
+
+

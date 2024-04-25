@@ -1,11 +1,18 @@
+import 'package:demo_project/Screen/practice.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../Style/App_TextField.dart';
 import '../Style/ElevatedButton.dart';
+import '../utils/SnakBar.dart';
+import 'ResetPassword.dart';
+import 'Splash.dart';
 import 'bottom_nav_bar.dart';
 import 'package:firebase_core_web/firebase_core_web.dart';
+import 'package:google_sign_in_web/google_sign_in_web.dart';
 
 class LogInSreen extends StatefulWidget {
   const LogInSreen({Key? key}) : super(key: key);
@@ -20,7 +27,56 @@ class _LogInSreenState extends State<LogInSreen> {
   final TextEditingController _passwordETController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool m=true;
+  final GoogleSignIn googleSignIn = GoogleSignIn();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
+
+  Future<void> _login() async {
+    try {
+      final result = await FirebaseAuth.instance.signInWithEmailAndPassword(
+         email: _emailETController.text,
+        password: _passwordETController.text,
+      );
+      // User logged in successfully
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const DashBord()));
+      print('User logged in: ${result.user!.uid}');
+    } catch (e) {
+
+      print('Error logging in: $e');
+    }
+  }
+
+
+
+  Future<User?> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleSignInAccount = await googleSignIn.signIn();
+      if (googleSignInAccount != null) {
+        final GoogleSignInAuthentication googleSignInAuthentication =
+        await googleSignInAccount.authentication;
+        final AuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleSignInAuthentication.accessToken,
+          idToken: googleSignInAuthentication.idToken,
+        );
+        final UserCredential authResult = await _auth.signInWithCredential(credential);
+        final User? user = authResult.user;
+      // return user;
+        if (user != null) {
+          // Navigate to the next screen or perform any required actions
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const DashBord()));
+
+
+        }
+
+
+
+
+      }
+    } catch (error) {
+      print(error);
+      return null;
+    }
+  }
 
 
 
@@ -68,9 +124,10 @@ class _LogInSreenState extends State<LogInSreen> {
                 ),
                 AppTextFieldWidget(
                   controller: _emailETController,
+                  prefixIcon: Icon(Icons.mail_lock_outlined),
                   hintText: 'Enter Your Email',
                   validator: (value) {
-                    if (value?.isEmpty ?? true) {
+                    if (value?.isEmpty ?? true)  {
                       return 'Enter your valid email';
                     }
                     return null;
@@ -82,6 +139,7 @@ class _LogInSreenState extends State<LogInSreen> {
                 ),
                 AppTextFieldWidget(
                   obscureText: m,
+                  prefixIcon: Icon(Icons.key),
                   hintText: 'Enter Your Password',
                   controller: _passwordETController,
                   suffixIcon: IconButton(icon:const Icon(Icons.remove_red_eye_outlined),
@@ -94,7 +152,7 @@ class _LogInSreenState extends State<LogInSreen> {
                   ),
                   validator: (value) {
                     if ((value?.isEmpty ?? true) &&
-                        ((value?.length ?? 0) < 6)) {
+                        ((value?.length ?? 0) < 6))  {
                       return 'Enter password more than 6';
                     }
                     return null;
@@ -109,10 +167,9 @@ class _LogInSreenState extends State<LogInSreen> {
                   child: AppElevatedButton(
                     onTap: () async {
                       if (_formKey.currentState!.validate()) {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const DashBord()));
-                      //   if(user!=null) {
-                      //   Navigator.push(context, MaterialPageRoute(builder: (context) => const DashBord()));
-                      // }
+                        _login();
+
+
                       }
                     },
 
@@ -138,7 +195,7 @@ class _LogInSreenState extends State<LogInSreen> {
                 ),
                 Center( child: TextButton(
                       onPressed: () {
-
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => ResetPassword()));
                       },
                       child:  Text('Forgot Password?',
                         style:GoogleFonts.poppins(
@@ -175,9 +232,14 @@ class _LogInSreenState extends State<LogInSreen> {
                 ),
 
                 AppElevatedButton(
-                  onTap: ()  {
+                  onTap: ()  async {
 
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const DashBord()));
+                   // await FirebaseServices().signInWithGoogle();
+
+                    signInWithGoogle();
+
+
+                    //Navigator.push(context, MaterialPageRoute(builder: (context) => const DashBord()));
 
                   },
                   child:  Center(

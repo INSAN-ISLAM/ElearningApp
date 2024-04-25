@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "693396932166",
+    "project_id": "finalelearningapp",
+    "storage_bucket": "finalelearningapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:693396932166:android:e10c857e22513e32302c47",
+        "android_client_info": {
+          "package_name": "com.example.untitled8"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDItbSvlRD74r0yImfHExtmcxZ2Mo32QAU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

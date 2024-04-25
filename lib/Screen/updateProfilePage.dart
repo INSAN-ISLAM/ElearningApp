@@ -1,5 +1,10 @@
 import 'dart:convert';
+import 'dart:html';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:googleapis/binaryauthorization/v1.dart';
 import 'package:image_picker/image_picker.dart';
 import '../DATA/data.dart';
 import '../Style/App_TextField.dart';
@@ -15,7 +20,7 @@ class UpdateProfileScreen extends StatefulWidget {
 }
 class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   final TextEditingController _emailETController = TextEditingController();
-  final TextEditingController _firstNameETController = TextEditingController();
+  final TextEditingController _NameETController = TextEditingController();
   final TextEditingController _class_NameETController = TextEditingController();
   final TextEditingController _mobileETController = TextEditingController();
   final TextEditingController _bloodETController = TextEditingController();
@@ -24,36 +29,97 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   XFile? pickedImage;
   String? base64Image;
 
-  @override
-  void initState() {
-    super.initState();
-    _emailETController.text = AuthUtils.email ?? '';
-    _firstNameETController.text = AuthUtils.firstName ?? '';
-    _class_NameETController.text = AuthUtils.lastName ?? '';
-    _mobileETController.text = AuthUtils.mobile ?? '';
-  }
 
-  void updateProfile() async {
-    if (pickedImage != null) {
-      List<int> imageBytes = await pickedImage!.readAsBytes();
-      print(imageBytes);
-      base64Image = base64Encode(imageBytes);
-      print(base64Image);
+  Future<void> updateProfile() async {
+
+    if (imgUrl!.isEmpty) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Url is a empty')));
+      return;
     }
 
-    Map<String, String> bodyParams = {
-      'firstName' : _firstNameETController.text.trim(),
-      'lastName' : _class_NameETController.text.trim(),
-      'mobile' : _mobileETController.text.trim(),
-      'photo' : base64Image ?? ''
-    };
+    try {
 
-    if (_passwordETController.text.isNotEmpty) {
-      bodyParams['password'] = _passwordETController.text;
+
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+
+        print(user.uid);
+        final result=FirebaseFirestore.instance.collection('Check').doc(user.uid).update({
+            'name': _NameETController.text,
+            'mobile': _mobileETController.text,
+            'email': _emailETController.text,
+            'Blood': _bloodETController.text,
+            'Class Name': _class_NameETController.text,
+            'password': int.tryParse(_passwordETController.text) ?? 0,
+            'image':  imgUrl ?? ''
+          });
+
+
+
+
+
+
+      }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      // final result=FirebaseFirestore.instance.collection('Check').doc('0gfYD4SPVODjcDQZufb5').update({
+      //   'name': _NameETController.text,
+      //   'mobile': _mobileETController.text,
+      //   'email': _emailETController.text,
+      //   'Blood': _bloodETController.text,
+      //   'ClassName': _class_NameETController.text,
+      //   'password': int.tryParse(_passwordETController.text) ?? 0,
+      //   'image':  imgUrl ?? ''
+      // });
+
+     //rint('User signed up: ${result.Check!.uid}');
+
+    } catch (e) {
+      // Error occurred during signup
+      print('Error signing up: $e');
+      // showSnackBarMessage(context as BuildContext, 'Registration Failed! Try again', true);
     }
-
-
   }
+  String? imgUrl;
+  String? file;
+  uploadToStorage() {
+    FileUploadInputElement input = FileUploadInputElement();
+    input.accept = 'image*/';
+    FirebaseStorage fs = FirebaseStorage.instance;
+    input.click();
+    input.onChange.listen((event) {
+      final file = input.files?.first;
+      final reader = FileReader();
+      reader.readAsDataUrl(file!);
+      reader.onLoadEnd.listen((event) async {
+        var snapshot = await fs.ref().child('newfile').putBlob(file);
+        String downloadUrl = await snapshot.ref.getDownloadURL();
+        setState(() {
+          imgUrl = downloadUrl;
+        });
+      });
+    });
+  }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +147,10 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                           ),
                           InkWell(
                             onTap: () async {
-                              pickImage();
+                              //pickImage();
+                              uploadToStorage();
+
+
                             },
                             child: Row(
                               children: [
@@ -104,12 +173,9 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                                           topRight: Radius.circular(8),
                                           bottomRight: Radius.circular(8),
                                         )),
-                                    child: Text(
-                                      pickedImage?.name ?? '',
-                                      maxLines: 1,
-                                      style: const TextStyle(
-                                          overflow: TextOverflow.ellipsis),
-                                    ),
+                                    child: file != null
+                                        ? Text(' image selected.')//
+                                        : Text('No image selected.'),
                                   ),
                                 ),
                               ],
@@ -118,17 +184,10 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                           const SizedBox(
                             height: 8,
                           ),
-                          AppTextFieldWidget(
-                            hintText: 'Email',
-                            controller: _emailETController,
-                            readOnly: true,
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
+
                           AppTextFieldWidget(
                             hintText: ' Name',
-                            controller: _firstNameETController,
+                            controller: _NameETController,
                           ),
                           const SizedBox(
                             height: 8,
@@ -149,21 +208,13 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                           ),
                           AppTextFieldWidget(
                             hintText: 'Blood Group',
-                            obscureText: true,
+
                             controller: _bloodETController,
                           ),
                           const SizedBox(
                             height: 16,
                           ),
 
-                          AppTextFieldWidget(
-                            hintText: 'Password',
-                            obscureText: true,
-                            controller: _passwordETController,
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
                           AppElevatedButton(
                             child: const Text("Submit"),
                             onTap: () {

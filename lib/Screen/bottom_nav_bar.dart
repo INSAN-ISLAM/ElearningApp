@@ -2,7 +2,7 @@ import 'package:demo_project/Screen/profile_Page.dart';
 import 'package:flutter/material.dart';
 
 import 'Home_Page.dart';
-import 'Info_Page.dart';
+import 'Notification_Page.dart';
 
 class DashBord extends StatefulWidget {
   const DashBord({Key? key}) : super(key: key);
@@ -16,7 +16,7 @@ class _DashBordState extends State<DashBord> {
   int _selectedIndex = 0;
   static const List pages = [
     HomePage1(),
-    InformationPage(),
+   NotificationPage(),
     ProfilePage(),
   ];
 
@@ -46,7 +46,7 @@ class _DashBordState extends State<DashBord> {
         ),
         items:  <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home),label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.message),label: "InformationPage"),
+          BottomNavigationBarItem(icon: Icon(Icons.message),label: "Notifications"),
           BottomNavigationBarItem(icon: Icon(Icons.person),label: "Profile")
         ],
 

@@ -1,3 +1,4 @@
+import 'package:demo_project/Screen/profile_Page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -14,6 +15,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,7 +54,12 @@ class _HomePageState extends State<HomePage> {
                       context,
                       MaterialPageRoute(
                           builder: (context) => const LogInSreen()));
-                },
+
+                  //Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage()));
+
+                 },
+
+
                 child: Center(
                   child: Text(
                     "GET STARED",
